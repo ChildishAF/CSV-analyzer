@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import io
-import openai
 
 st.set_page_config(page_title="CSV Data Analyzer", layout="wide")
 
@@ -34,41 +33,7 @@ if uploaded_file is not None:
     col2.metric("Total Columns", df.shape[1])
     col3.metric("Missing Values", df.isnull().sum().sum())
 
-    # Load your key from secrets
-    client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-
-    def generate_summary(df):
-        prompt = f"""
-    You are a data analyst. Provide a short summary of this dataset:
-    - Rows: {df.shape[0]}
-    - Columns: {df.shape[1]}
-    - Columns: {', '.join(df.columns[:10])}{"..." if len(df.columns) > 10 else ""}
-    - Summary stats:
-
-    {df.describe(include='all').to_string()}
-    """
-
-        try:
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a data analyst."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.7,
-                max_tokens=400
-            )
-            return response.choices[0].message.content.strip()
-        except Exception as e:
-            return f"❌ Failed to generate summary: {e}"
-
-
-    # Display summary
-    with st.expander("🧠 AI-Powered Summary"):
-        with st.spinner("Generating AI summary..."):
-            ai_summary = generate_summary(df)
-            st.markdown(ai_summary)
 
     # ---------- TABS ----------
     tab1, tab2, tab3, tab4 = st.tabs(["🧾 Data Preview", "📊 Charts", "📉 Correlation", "📥 Export"])
